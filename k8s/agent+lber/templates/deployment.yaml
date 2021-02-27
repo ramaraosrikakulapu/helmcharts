@@ -91,33 +91,7 @@ spec:
         {{- include "agent.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: agentlber
-          image: "ghcr.io/ec-release/oci/agent:v1"
-          command: {{ include "agent.launchCmd" . }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            {{- include "agent.portSpec" . | nindent 12 }}
-            {{- include "agent.healthPortSpec" . | nindent 12 }}
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: agt-h-prt
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: agt-h-prt
-          resources:
-            {{- include "agent.podResource" . | nindent 12 }}
-          env:
-            {{- range (split "\n" .Values.global.agtConfig) }}
-            {{- $a := splitn "=" 2 . }}
-            {{- if and (not (eq $a._1 "")) ($a._1) }}
-            - name: {{ $a._0|quote }}
-              value: {{ $a._1|quote }}
-            {{- end -}}
-            {{- end -}}
+        {{- include "agent.container" (merge (dict "agentRev" $agentRev "binaryURL" $binaryURL "ownerHash" $ownerHash "contrName" $contrName "contrReleaseTag" $contrReleaseTag "contrSecurityContext" $contrSecurityContext "portName" $portName "healthPortName" $healthPortName) .) | nindent 10 }}          
             {{- include "agent.cfenv" . | nindent 12 }}
             - name: uuid
               value: {{ $uuid | quote }}
